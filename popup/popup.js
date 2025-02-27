@@ -1,12 +1,7 @@
 document.getElementById('start-tracking').addEventListener('click', () => {
-    // Get the active tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
-            let tabId = tabs[0].id;
-            chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                files: ['scripts/eye-tracker.js']
-            });
+            chrome.tabs.sendMessage(tabs[0].id, { action: "start-tracking" });
         } else {
             console.error('No active tab found.');
         }
@@ -14,5 +9,9 @@ document.getElementById('start-tracking').addEventListener('click', () => {
 });
 
 document.getElementById('stop-tracking').addEventListener('click', () => {
-    alert('Stop tracking feature is under development.');
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "stop-tracking" });
+        }
+    });
 });

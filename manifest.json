@@ -20,11 +20,14 @@
       "<all_urls>"
     ],
     "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["scripts/eye-tracker.js"],
+    {
+        "matches": [
+            "https://*/*",
+            "http://*/*"
+        ],
+        "js": ["scripts/webgazer.js","scripts/eye-tracker.js"],
         "css": ["popup/popup.css"]
-      }
-    ]
+    }
+]
   }
   
