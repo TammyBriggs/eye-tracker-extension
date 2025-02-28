@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Eye Mouse",
+    "name": "OptiCursor",
     "version": "1.0",
     "description": "Control your mouse using eye movement.",
     "action": {
