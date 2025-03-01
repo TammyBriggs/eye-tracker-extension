@@ -27,7 +27,7 @@ This document provides instructions on how to set up and use the OptiCusor exten
     * If you do not see it, click the puzzle piece icon, and pin the Eye Mouse extension.
 
 2.  **Start Eye Tracking:**
-    * Click the Eye Mouse extension icon in your Chrome toolbar.
+    * Click the optiCursor icon in your Chrome toolbar.
     * A popup window will appear with "Start Tracking", "Stop Tracking" and "Caliberate" buttons.
     * Click "Start Tracking."
     * Chrome will request permission to use your webcam. Grant the permission.
@@ -71,4 +71,4 @@ This document provides instructions on how to set up and use the OptiCusor exten
 
 ## License
 
-This extension is released under the [MIT License]
+This extension is released under the MIT License
