@@ -10,6 +10,7 @@
 
     // Listener for starting/stopping tracking
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.log("Received message:", request);
         if (request.action === "stop-tracking") {
             if (eyeCursor) {
                 eyeCursor.remove();
