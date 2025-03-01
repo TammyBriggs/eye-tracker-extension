@@ -12,11 +12,13 @@
     let verificationDots = [];
     let accuratePredictionsCount = [];
     const SCROLL_UP_THRESHOLD = 0.05;   // Top 5% of screen
-    const SCROLL_DOWN_THRESHOLD = 0.5; // Bottom 35% of screen
+    const SCROLL_DOWN_THRESHOLD = 0.65; // Bottom 35% of screen
     const GAZE_HOLD_TIME = 3000;        // 3 seconds
-
     let gazeStartTime = null;
     let currentScrollAction = null;
+    let gazeTarget = null;
+    let gazeHoldStartTime = null;
+        const GAZE_CLICK_HOLD_TIME = 1000;  // 1 second
 
     // Listener for starting/stopping tracking
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -80,8 +82,60 @@
                             currentScrollAction = null;
                         }
                     }
+                    webgazer.setGazeListener((data, elapsedTime) => {
+                        if (data) {
+                            const gazeX = data.x;
+                            const gazeY = data.y;
+                    
+                            // Find clickable elements on the page
+                            const clickables = document.querySelectorAll(`
+                                button, 
+                                a[href], 
+                                input[type="button"], 
+                                input[type="submit"],
+                                [onclick]
+                            `);
+                    
+                            clickables.forEach((element) => {
+                                const rect = element.getBoundingClientRect();
+                                if (
+                                    gazeX >= rect.left && gazeX <= rect.right &&
+                                    gazeY >= rect.top && gazeY <= rect.bottom
+                                ) {
+                                    if (gazeTarget !== element) {
+                                        // User started looking at a new element
+                                        gazeTarget = element;
+                                        gazeHoldStartTime = new Date().getTime();
+                                    } else {
+                                        // User is still looking at the same element
+                                        const holdTime = new Date().getTime() - gazeHoldStartTime;
+                                        if (holdTime >= GAZE_CLICK_HOLD_TIME) {
+                                            element.click();  // Trigger the click event
+                                            gazeTarget = null;  // Reset gaze target
+                                            gazeHoldStartTime = null;
+                                        }
+                                    }
+                                }
+                            });
+                    
+                            // If the gaze is not on any clickable element, reset
+                            if (![...clickables].some((element) => {
+                                const rect = element.getBoundingClientRect();
+                                return (
+                                    gazeX >= rect.left && gazeX <= rect.right &&
+                                    gazeY >= rect.top && gazeY <= rect.bottom
+                                );
+                            })) {
+                                gazeTarget = null;
+                                gazeHoldStartTime = null;
+                            }
+                        }
+                    });
                 });
             }
+        }
+        if (request.action === "start-calibration") {
+            startCalibration();
         }
     });
 
