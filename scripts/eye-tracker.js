@@ -11,14 +11,14 @@
     const requiredAccuratePredictions = 5;
     let verificationDots = [];
     let accuratePredictionsCount = [];
-    const SCROLL_UP_THRESHOLD = 0.05;   // Top 5% of screen
-    const SCROLL_DOWN_THRESHOLD = 0.65; // Bottom 35% of screen
-    const GAZE_HOLD_TIME = 3000;        // 3 seconds
+    const SCROLL_UP_THRESHOLD = 0.2;  
+    const SCROLL_DOWN_THRESHOLD = 0.5; // Bottom 50% of screen
+    const GAZE_HOLD_TIME = 2000;      
     let gazeStartTime = null;
     let currentScrollAction = null;
     let gazeTarget = null;
     let gazeHoldStartTime = null;
-        const GAZE_CLICK_HOLD_TIME = 1000;  // 1 second
+    const GAZE_CLICK_HOLD_TIME = 500;  
 
     // Listener for starting/stopping tracking
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -56,81 +56,68 @@
                 // Gaze Listener for Scrolling
                 webgazer.setGazeListener((data, elapsedTime) => {
                     if (data) {
-                        const gazeY = data.y / window.innerHeight; // Get normalized Y position
-
-                        // Check if gaze is in the scroll up zone
+                        const gazeX = data.x;
+                        const gazeY = data.y / window.innerHeight; // Normalized Y for scrolling logic
+                
+                        // ====== Scroll Logic ======
                         if (gazeY < SCROLL_UP_THRESHOLD) {
                             if (currentScrollAction !== 'up') {
                                 gazeStartTime = new Date().getTime();
                                 currentScrollAction = 'up';
                             } else if (new Date().getTime() - gazeStartTime >= GAZE_HOLD_TIME) {
                                 handleScroll('up');
+                                gazeStartTime = new Date().getTime(); // Reset for continuous scrolling
                             }
-                        }
-                        // Check if gaze is in the scroll down zone
-                        else if (gazeY > SCROLL_DOWN_THRESHOLD) {
+                        } else if (gazeY > SCROLL_DOWN_THRESHOLD) {
                             if (currentScrollAction !== 'down') {
                                 gazeStartTime = new Date().getTime();
                                 currentScrollAction = 'down';
                             } else if (new Date().getTime() - gazeStartTime >= GAZE_HOLD_TIME) {
                                 handleScroll('down');
+                                gazeStartTime = new Date().getTime(); // Reset for continuous scrolling
                             }
-                        }
-                        // Reset if gaze is outside scroll zones
-                        else {
+                        } else {
                             gazeStartTime = null;
                             currentScrollAction = null;
                         }
-                    }
-                    webgazer.setGazeListener((data, elapsedTime) => {
-                        if (data) {
-                            const gazeX = data.x;
-                            const gazeY = data.y;
-                    
-                            // Find clickable elements on the page
-                            const clickables = document.querySelectorAll(`
-                                button, 
-                                a[href], 
-                                input[type="button"], 
-                                input[type="submit"],
-                                [onclick]
-                            `);
-                    
-                            clickables.forEach((element) => {
-                                const rect = element.getBoundingClientRect();
-                                if (
-                                    gazeX >= rect.left && gazeX <= rect.right &&
-                                    gazeY >= rect.top && gazeY <= rect.bottom
-                                ) {
-                                    if (gazeTarget !== element) {
-                                        // User started looking at a new element
-                                        gazeTarget = element;
-                                        gazeHoldStartTime = new Date().getTime();
-                                    } else {
-                                        // User is still looking at the same element
-                                        const holdTime = new Date().getTime() - gazeHoldStartTime;
-                                        if (holdTime >= GAZE_CLICK_HOLD_TIME) {
-                                            element.click();  // Trigger the click event
-                                            gazeTarget = null;  // Reset gaze target
-                                            gazeHoldStartTime = null;
-                                        }
+                
+                        // ====== Clickable Element Detection ======
+                        const clickables = document.querySelectorAll(`
+                            button, 
+                            a[href], 
+                            input[type="button"], 
+                            input[type="submit"],
+                            [onclick]
+                        `);
+                
+                        let isGazingAtClickable = false;
+                        clickables.forEach((element) => {
+                            const rect = element.getBoundingClientRect();
+                            if (
+                                gazeX >= rect.left && gazeX <= rect.right &&
+                                data.y >= rect.top && data.y <= rect.bottom
+                            ) {
+                                isGazingAtClickable = true;
+                                if (gazeTarget !== element) {
+                                    gazeTarget = element;
+                                    gazeHoldStartTime = new Date().getTime();
+                                } else {
+                                    const holdTime = new Date().getTime() - gazeHoldStartTime;
+                                    if (holdTime >= GAZE_CLICK_HOLD_TIME) {
+                                        element.click();  // Trigger the click event
+                                        gazeTarget = null;
+                                        gazeHoldStartTime = null;
                                     }
                                 }
-                            });
-                    
-                            // If the gaze is not on any clickable element, reset
-                            if (![...clickables].some((element) => {
-                                const rect = element.getBoundingClientRect();
-                                return (
-                                    gazeX >= rect.left && gazeX <= rect.right &&
-                                    gazeY >= rect.top && gazeY <= rect.bottom
-                                );
-                            })) {
-                                gazeTarget = null;
-                                gazeHoldStartTime = null;
                             }
+                        });
+                
+                        // Reset gaze if not on a clickable element
+                        if (!isGazingAtClickable) {
+                            gazeTarget = null;
+                            gazeHoldStartTime = null;
                         }
-                    });
+                    }
                 });
             }
         }
@@ -258,9 +245,9 @@
 
     function handleScroll(action) {
         if (action === 'up') {
-            window.scrollBy({ top: -30, behavior: 'smooth' });
+            window.scrollBy({ top: -50, behavior: 'smooth' });
         } else if (action === 'down') {
-            window.scrollBy({ top: 30, behavior: 'smooth' });
+            window.scrollBy({ top: 50, behavior: 'smooth' });
         }
     }
 })();
