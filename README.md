@@ -68,10 +68,7 @@ This document provides instructions on how to set up and use the OptiCusor exten
     * Ensure that the manifest.json file has the permissions "tabs" and "scripting" declared.
     * If you are sending messages to all URLs, ensure that the manifest.json file has the "host_permissions" property set to "<all_urls>".
 
-## Contributing
-
-If you'd like to contribute to the Eye Mouse extension, please feel free to submit pull requests or report issues on the project's repository.
 
 ## License
 
-This extension is released under the [Specify your license here, e.g., MIT License].
+This extension is released under the [MIT License]
