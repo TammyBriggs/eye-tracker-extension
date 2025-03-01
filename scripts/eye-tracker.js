@@ -11,7 +11,7 @@
     const requiredAccuratePredictions = 5;
     let verificationDots = [];
     let accuratePredictionsCount = [];
-    const SCROLL_UP_THRESHOLD = 0.2;  
+    const SCROLL_UP_THRESHOLD = 0.1;  
     const SCROLL_DOWN_THRESHOLD = 0.5; // Bottom 50% of screen
     const GAZE_HOLD_TIME = 2000;      
     let gazeStartTime = null;
